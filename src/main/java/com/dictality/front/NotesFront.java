@@ -20,14 +20,45 @@ public class NotesFront implements FrontBase {
     @Override
     public void start() throws Exception {
 
-        List<String> notesContent = notesRepository.getNotesContent(UserSession.INSTANCE.getUser().getUsername());
+        List<String> notesContent = notesRepository.getNotesContent(UserSession.INSTANCE.getUser().username());
         JOptionPane.showMessageDialog(null,
                 formattedNotesContent(notesContent),
                 "Old Notes:",
                 JOptionPane.INFORMATION_MESSAGE);
 
+        int groupId = UserSession.INSTANCE.getUser().groupId();
+        displayGroupRecords(groupId);
+
         String note = JOptionPane.showInputDialog("Your note:");
-        notesRepository.saveNote(note, UserSession.INSTANCE.getUser().getUsername());
+        notesRepository.saveNote(note, UserSession.INSTANCE.getUser().username());
+    }
+
+    private void displayGroupRecords(int groupId) throws Exception {
+        if (groupId == -1) return;
+
+        FileUserRepository fileUserRepository = new FileUserRepository(Path.of("src/users.csv"));
+        List<User> inGroupNotes = fileUserRepository.findAllByGroupId(groupId);
+
+        List<String> inGroupUsernames = inGroupNotes.stream()
+                .filter(user -> {
+                    String username = UserSession.INSTANCE.getUser().username();
+                    String password = UserSession.INSTANCE.getUser().password();
+                    return !user.isSameUser(username, password);
+                })
+                .map(User::username)
+                .toList();
+
+        StringBuilder inGroupNotesString = new StringBuilder();
+        for (String username : inGroupUsernames) {
+            List<String> notesContent = notesRepository.getNotesContent(username);
+
+            inGroupNotesString.append("\nFrom ").append(username).append(":\n");
+            inGroupNotesString.append(formattedNotesContent(notesContent));
+        }
+        JOptionPane.showMessageDialog(null,
+                inGroupNotesString.toString(),
+                "Notes from Group Members:",
+                JOptionPane.INFORMATION_MESSAGE);
     }
 
     private String formattedNotesContent(List<String> notesContent) {

@@ -1,16 +1,8 @@
 package com.dictality.model;
 
-public class User {
+public record User(String username, String password, int groupId) {
 
-    private final String username;
-    private final String password;
-
-    public User(String username, String password) {
-        this.username = username;
-        this.password = password;
-    }
-
-    public boolean isSameUser(String username, String password){
+    public boolean isSameUser(String username, String password) {
         return this.username.equals(username) && this.password.equals(password);
     }
 
@@ -19,14 +11,7 @@ public class User {
         return "User{" +
                 "username='" + username + '\'' +
                 ", password='" + password + '\'' +
+                ", groupId='" + groupId + '\'' +
                 '}';
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getPassword() {
-        return password;
     }
 }
